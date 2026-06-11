@@ -2131,10 +2131,20 @@ function setupGoogleDriveUI() {
 
   // Atualiza informações de status
   if (API.drive.isAuthorized()) {
-    statusAuth.textContent = 'Conectado';
+    statusAuth.textContent = 'Conectando...';
     statusAuth.className = 'value-positive';
     connectBtn.style.display = 'none';
     disconnectBtn.style.display = 'inline-flex';
+    
+    API.drive.getUserInfo().then(user => {
+      if (user && user.email) {
+        statusAuth.textContent = 'Conectado (' + user.email + ')';
+      } else {
+        statusAuth.textContent = 'Conectado';
+      }
+    }).catch(() => {
+      statusAuth.textContent = 'Conectado';
+    });
     
     if (API.drive.fileId) {
       fileInfo.textContent = 'Banco de Dados: finance.db (ID: ' + API.drive.fileId + ')';

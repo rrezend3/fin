@@ -44,7 +44,7 @@ class GoogleDriveService {
 
     this.tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: this.clientId,
-      scope: 'https://www.googleapis.com/auth/drive', // Acesso completo para buscar arquivos criados via desktop sync
+      scope: 'https://www.googleapis.com/auth/drive email profile', // Acesso completo e dados do usuário
       callback: (response) => {
         if (response.error) {
           console.error('Erro na autenticação do Google:', response.error);
@@ -211,6 +211,24 @@ class GoogleDriveService {
     }
 
     return await res.json();
+  }
+
+  /**
+   * Obtém informações do usuário conectado (para verificar o e-mail)
+   */
+  async getUserInfo() {
+    if (!this.isAuthorized()) return null;
+    const url = 'https://www.googleapis.com/oauth2/v3/userinfo';
+    try {
+      const res = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${this.accessToken}` }
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (err) {
+      console.error('Erro ao buscar perfil do usuário:', err);
+      return null;
+    }
   }
 }
 
