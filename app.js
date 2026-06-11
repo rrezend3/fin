@@ -2154,7 +2154,7 @@ function setupGoogleDriveUI() {
         fileInfo.textContent = 'Banco de Dados: Não localizado no Drive';
       }
     }).catch(err => {
-      fileInfo.textContent = 'Banco de Dados: Erro ao buscar no Drive';
+      fileInfo.textContent = 'Banco de Dados: ' + err.message;
       console.error(err);
     });
   } else {
