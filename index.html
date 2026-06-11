@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FIN - Controle Financeiro</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2225%22 fill=%22%235e17eb%22/><text y=%2270%22 x=%2220%22 font-family=%22Outfit, sans-serif%22 font-size=%2265%22 font-weight=%22bold%22 fill=%22%23ffffff%22>F</text></svg>">
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="index.css">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#5e17eb">
+</head>
+<body>
+  <div class="app-container">
+    <!-- BARRA LATERAL (SIDEBAR) -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-text">FIN</span>
+      </div>
+      
+      <div class="new-trans-container">
+        <button class="btn-new-trans" id="btn-sidebar-new">
+          <i data-lucide="plus"></i>
+          <span>Novo</span>
+        </button>
+        <div class="new-trans-dropdown" id="new-trans-dropdown">
+          <a href="#" class="dropdown-item" id="opt-new-expense">
+            <i data-lucide="trending-down" class="icon-danger"></i>
+            <span>Despesa</span>
+          </a>
+          <a href="#" class="dropdown-item" id="opt-new-income">
+            <i data-lucide="trending-up" class="icon-success"></i>
+            <span>Receita</span>
+          </a>
+          <a href="#" class="dropdown-item" id="opt-new-card">
+            <i data-lucide="credit-card" class="icon-teal"></i>
+            <span>Despesa cartão</span>
+          </a>
+          <a href="#" class="dropdown-item" id="opt-new-transfer">
+            <i data-lucide="arrow-left-right" class="icon-blue"></i>
+            <span>Transferência</span>
+          </a>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#dashboard" class="nav-item active" data-target="dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="#transactions" class="nav-item" data-target="transactions">
+          <i data-lucide="arrow-left-right"></i>
+          <span>Transações</span>
+        </a>
+        <a href="#cards" class="nav-item" data-target="cards">
+          <i data-lucide="credit-card"></i>
+          <span>Cartões de crédito</span>
+        </a>
+        <a href="#planning" class="nav-item" data-target="planning">
+          <i data-lucide="compass"></i>
+          <span>Planejamento</span>
+        </a>
+        <a href="#reports" class="nav-item" data-target="reports">
+          <i data-lucide="pie-chart"></i>
+          <span>Relatórios</span>
+        </a>
+        <a href="#config" class="nav-item" data-target="config">
+          <i data-lucide="settings"></i>
+          <span>Configurações</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="main-content">
+      <!-- CABEÇALHO SUPERIOR -->
+      <header class="main-header">
+        <div class="header-left">
+          <!-- Seletor de Mês/Ano Global -->
+          <div class="month-selector">
+            <button class="btn-month-nav" id="btn-month-prev">
+              <i data-lucide="chevron-left"></i>
+            </button>
+            <span class="current-month-display" id="month-display">Maio 2026</span>
+            <input type="month" id="month-picker" style="display:none;">
+            <button class="btn-month-nav" id="btn-month-next">
+              <i data-lucide="chevron-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <!-- Indicador de Sincronização do Google Drive -->
+          <div class="sync-indicator-container" id="sync-indicator" style="display:none;" title="Sincronização com o Google Drive">
+            <i data-lucide="refresh-cw" class="icon-sync-status" id="sync-icon"></i>
+            <span class="sync-text" id="sync-text">Conectando...</span>
+          </div>
+          <div class="header-divider" id="sync-divider" style="display:none;"></div>
+          
+          <button class="btn-header-action" title="Notificações">
+            <i data-lucide="bell"></i>
+          </button>
+          <div class="header-divider"></div>
+          <span class="header-user-name">Ricardo Rezende</span>
+        </div>
+      </header>
+
+      <!-- SEÇÕES DAS TELAS (SPA) -->
+      <div class="screen-container">
+        
+        <!-- 1. TELA DASHBOARD -->
+        <section id="screen-dashboard" class="app-screen">
+          <!-- Cards de Resumo no Topo -->
+          <div class="summary-cards-grid">
+            <div class="summary-card">
+              <div class="card-icon card-blue">
+                <i data-lucide="wallet"></i>
+              </div>
+              <div class="card-data">
+                <span class="card-title">Saldo Efetivo</span>
+                <h3 class="card-value value-neutral" id="dash-real-balance">R$ 0,00</h3>
+                <span class="card-sub">Saldo real atual</span>
+              </div>
+            </div>
+            <div class="summary-card">
+              <div class="card-icon card-green">
+                <i data-lucide="trending-up"></i>
+              </div>
+              <div class="card-data">
+                <span class="card-title">Previsão Receitas</span>
+                <h3 class="card-value value-positive" id="dash-total-income">R$ 0,00</h3>
+                <span class="card-sub" id="dash-income-sub">Efetivado: R$ 0,00</span>
+              </div>
+            </div>
+            <div class="summary-card">
+              <div class="card-icon card-red">
+                <i data-lucide="trending-down"></i>
+              </div>
+              <div class="card-data">
+                <span class="card-title">Previsão Despesas</span>
+                <h3 class="card-value value-negative" id="dash-total-expense">R$ 0,00</h3>
+                <span class="card-sub" id="dash-expense-sub">Efetivado: R$ 0,00</span>
+              </div>
+            </div>
+            <div class="summary-card">
+              <div class="card-icon card-teal">
+                <i data-lucide="credit-card"></i>
+              </div>
+              <div class="card-data">
+                <span class="card-title">Fatura Cartão</span>
+                <h3 class="card-value value-orange" id="dash-credit-card">R$ 0,00</h3>
+                <span class="card-sub">Cobranças no mês</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Conteúdo Principal do Painel -->
+          <div class="dash-content-grid">
+            <div class="dash-panel panel-main">
+              <div class="panel-header">
+                <h3>Balanço Previsto do Mês</h3>
+                <span class="panel-badge" id="dash-balance-badge">Estável</span>
+              </div>
+              <div class="balance-display-box">
+                <h2 id="dash-predicted-balance">R$ 0,00</h2>
+                <p>Resultado estimado ao final do mês considerando transações recorrentes e futuras.</p>
+              </div>
+              <div class="progress-bar-container">
+                <span class="progress-label">Compromissamento de Renda</span>
+                <div class="progress-bar-bg">
+                  <div class="progress-bar-fill" id="dash-income-commitment-bar" style="width: 0%;"></div>
+                </div>
+                <span class="progress-sub" id="dash-commitment-sub">0% das receitas previstas serão gastas</span>
+              </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="dash-panel">
+              <div class="panel-header">
+                <h3>Despesas por Categoria</h3>
+              </div>
+              <div class="chart-container">
+                <canvas id="chartExpenses"></canvas>
+                <div id="chart-no-data" class="chart-empty" style="display:none;">
+                  <i data-lucide="alert-circle"></i>
+                  <p>Nenhuma despesa no mês</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lançamentos Pendentes Rápidos -->
+          <div class="dash-panel" style="margin-top: 24px;">
+            <div class="panel-header">
+              <h3>Transações Pendentes neste Mês</h3>
+              <span class="panel-subtitle">Valores agendados que precisam ser efetivados</span>
+            </div>
+            <div class="pending-list" id="dash-pending-list">
+              <!-- Renderizado dinamicamente -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. TELA TRANSAÇÕES -->
+        <section id="screen-transactions" class="app-screen" style="display:none;">
+          <div class="screen-header">
+            <div>
+              <h2>Transações do Mês</h2>
+              <p class="screen-subtitle">Gerencie suas receitas e despesas lançadas</p>
+            </div>
+            <div class="header-buttons">
+              <button class="btn btn-primary" id="btn-add-expense">
+                <i data-lucide="plus-circle"></i> Nova Despesa
+              </button>
+              <button class="btn btn-secondary" id="btn-add-income">
+                <i data-lucide="plus-circle"></i> Nova Receita
+              </button>
+            </div>
+          </div>
+
+          <!-- Filtros de Transações -->
+          <div class="transactions-filters">
+            <div class="search-input-wrapper">
+              <i data-lucide="search"></i>
+              <input type="text" id="filter-search" placeholder="Buscar por descrição...">
+            </div>
+            <select id="filter-type">
+              <option value="all">Todas as transações</option>
+              <option value="expense">Apenas Despesas</option>
+              <option value="income">Apenas Receitas</option>
+            </select>
+            <select id="filter-status">
+              <option value="all">Todos os Status</option>
+              <option value="realized">Efetivadas</option>
+              <option value="pending">Previstas (Pendentes)</option>
+            </select>
+          </div>
+
+          <!-- Lista de Transações -->
+          <div class="transactions-list-card">
+            <table class="transactions-table">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Descrição</th>
+                  <th>Categoria</th>
+                  <th>Forma Pgto</th>
+                  <th>Valor</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="transactions-table-body">
+                <!-- Inserido dinamicamente -->
+              </tbody>
+            </table>
+            <div id="transactions-empty-state" class="empty-state" style="display:none;">
+              <i data-lucide="clipboard-list"></i>
+              <p>Nenhuma transação encontrada para este mês.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. TELA CARTÕES -->
+        <section id="screen-cards" class="app-screen" style="display:none;">
+          <div class="screen-header">
+            <div>
+              <h2>Cartões de Crédito</h2>
+              <p class="screen-subtitle">Controle de limites e faturas</p>
+            </div>
+            <button class="btn btn-primary" id="btn-add-card">
+              <i data-lucide="plus"></i> Novo Cartão
+            </button>
+          </div>
+
+          <div class="cards-layout-grid">
+            <!-- Grid de cartões cadastrados -->
+            <div class="cards-list-grid" id="cards-list-container">
+              <!-- Inserido dinamicamente -->
+            </div>
+
+            <!-- Resumo e Detalhes da fatura selecionada -->
+            <div class="card-details-panel">
+              <div class="panel-header">
+                <h3>Detalhes das Faturas</h3>
+              </div>
+              <div class="card-bill-status-box">
+                <span class="bill-status-label">Total em Faturas no Mês</span>
+                <h2 id="card-total-bills-value">R$ 0,00</h2>
+              </div>
+              <div class="card-bill-info-list" id="card-bill-breakdown">
+                <!-- Renderizado dinamicamente -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3.1 SUBTELA DETALHAMENTO DE CARTÃO -->
+        <section id="screen-card-detail" class="app-screen" style="display:none;">
+          <div class="screen-header">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <button class="btn btn-secondary btn-sm" id="btn-back-to-cards" style="border-radius: var(--radius-full); width: 36px; height: 36px; padding: 0;">
+                <i data-lucide="arrow-left" style="width: 18px; height: 18px; margin: auto;"></i>
+              </button>
+              <div class="month-selector" style="margin-left: 8px;">
+                <span class="logo-badge" style="background-color: var(--primary-light); color: var(--primary); font-size: 14px; font-weight: 600; padding: 6px 16px; border-radius: var(--radius-full);" id="card-detail-title-badge">Cartão: Carregando...</span>
+              </div>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <!-- Seletor de mês local da fatura do cartão -->
+              <div class="month-selector">
+                <button class="btn-month-nav" id="btn-card-month-prev">
+                  <i data-lucide="chevron-left"></i>
+                </button>
+                <span class="current-month-display" id="card-month-display">Maio 2026</span>
+                <button class="btn-month-nav" id="btn-card-month-next">
+                  <i data-lucide="chevron-right"></i>
+                </button>
+              </div>
+              <button class="btn btn-primary" id="btn-edit-current-card">
+                <i data-lucide="pencil"></i> Editar Cartão
+              </button>
+            </div>
+          </div>
+
+          <div class="cards-layout-grid">
+            <!-- Tabela de lançamentos na fatura -->
+            <div class="transactions-list-card">
+              <table class="transactions-table">
+                <thead>
+                  <tr>
+                    <th>Situação</th>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Categoria</th>
+                    <th>Valor</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="card-transactions-table-body">
+                  <!-- Inserido dinamicamente -->
+                </tbody>
+              </table>
+              <div id="card-transactions-empty-state" class="empty-state" style="display:none;">
+                <i data-lucide="credit-card"></i>
+                <p>Você não possui despesas nesse período.</p>
+              </div>
+            </div>
+
+            <!-- Painel Lateral da Fatura -->
+            <div class="card-details-panel">
+              <div class="panel-header">
+                <h3>Resumo da Fatura</h3>
+              </div>
+              
+              <div class="card-bill-status-box" style="background-color: #fafbfe; border: 1px solid var(--border-color);">
+                <span class="bill-status-label">Valor da fatura</span>
+                <h2 id="card-detail-bill-amount" style="color: var(--danger-text); font-size: 28px; font-weight: 700; margin-top: 4px;">R$ 0,00</h2>
+              </div>
+
+              <div class="card-bill-info-list">
+                <div class="bill-breakdown-item">
+                  <div>
+                    <span class="bill-card-name" style="font-size: 13px; color: var(--text-muted);">Status da Fatura</span>
+                    <h4 id="card-detail-bill-status" style="font-size: 15px; font-weight: 600; margin-top: 4px;">Fatura aberta</h4>
+                  </div>
+                  <div class="card-icon card-teal" style="width: 36px; height: 36px; border-radius: var(--radius-sm);">
+                    <i data-lucide="file-text" style="width: 18px; height: 18px;"></i>
+                  </div>
+                </div>
+
+                <div class="bill-breakdown-item">
+                  <div>
+                    <span class="bill-card-name" style="font-size: 13px; color: var(--text-muted);">Dia de fechamento</span>
+                    <h4 id="card-detail-closing-date" style="font-size: 15px; font-weight: 600; margin-top: 4px;">Carregando...</h4>
+                  </div>
+                  <div class="card-icon card-blue" style="width: 36px; height: 36px; border-radius: var(--radius-sm);">
+                    <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
+                  </div>
+                </div>
+
+                <div class="bill-breakdown-item">
+                  <div>
+                    <span class="bill-card-name" style="font-size: 13px; color: var(--text-muted);">Data de vencimento</span>
+                    <h4 id="card-detail-due-date" style="font-size: 15px; font-weight: 600; margin-top: 4px;">Carregando...</h4>
+                  </div>
+                  <div class="card-icon card-green" style="width: 36px; height: 36px; border-radius: var(--radius-sm);">
+                    <i data-lucide="calendar-check" style="width: 18px; height: 18px;"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Botão para Efetivar Pagamento da Fatura -->
+              <div id="card-bill-pay-btn-container" style="margin-top: 24px; display: none;">
+                <button class="btn btn-success w-100" id="btn-pay-card-bill">
+                  <i data-lucide="check-circle"></i>
+                  <span>Pagar Fatura</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. TELA PLANEJAMENTO (ORÇAMENTO) -->
+        <section id="screen-planning" class="app-screen" style="display:none;">
+          <div class="screen-header">
+            <div>
+              <h2>Planejamento Mensal</h2>
+              <p class="screen-subtitle">Defina limites de despesas por categoria e evite surpresas</p>
+            </div>
+            <button class="btn btn-primary" id="btn-define-budget">
+              <i data-lucide="plus"></i> Definir Orçamento
+            </button>
+          </div>
+
+          <!-- Painel resumo de planejamento -->
+          <div class="planning-summary-grid">
+            <div class="plan-summary-card">
+              <span class="plan-card-title">Receitas Previstas</span>
+              <h3 id="plan-income-val">R$ 0,00</h3>
+            </div>
+            <div class="plan-summary-card">
+              <span class="plan-card-title">Gastos Planejados</span>
+              <h3 id="plan-budgeted-val">R$ 0,00</h3>
+            </div>
+            <div class="plan-summary-card">
+              <span class="plan-card-title">Balanço Planejado</span>
+              <h3 id="plan-balance-val">R$ 0,00</h3>
+            </div>
+            <div class="plan-summary-card">
+              <span class="plan-card-title">Total Gasto Até Agora</span>
+              <h3 id="plan-spent-val" class="value-negative">R$ 0,00</h3>
+            </div>
+          </div>
+
+          <!-- Lista de Orçamentos por Categoria -->
+          <div class="dash-panel" style="margin-top: 24px;">
+            <div class="panel-header">
+              <h3>Orçamento por Categorias</h3>
+            </div>
+            <div class="budget-list" id="planning-budget-list">
+              <!-- Renderizado dinamicamente -->
+            </div>
+            <div id="planning-empty-state" class="empty-state" style="display:none;">
+              <i data-lucide="compass"></i>
+              <p>Nenhum orçamento definido para este mês.</p>
+              <button class="btn btn-secondary btn-sm" id="btn-empty-add-budget" style="margin-top: 8px;">Definir Primeiro Orçamento</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. TELA RELATÓRIOS -->
+        <section id="screen-reports" class="app-screen" style="display:none;">
+          <div class="screen-header">
+            <div>
+              <h2>Relatórios & Análise</h2>
+              <p class="screen-subtitle">Acompanhe seu desempenho anual e mensal detalhado</p>
+            </div>
+            
+            <!-- Filtro de ano, visível apenas na aba Anual -->
+            <div class="year-selector" id="report-year-selector-container" style="display:none;">
+              <label for="report-year-select">Ano de Referência:</label>
+              <select id="report-year-select" class="form-select-sm">
+                <option value="2025">2025</option>
+                <option value="2026" selected>2026</option>
+                <option value="2027">2027</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Aba Menu de Relatório -->
+          <div class="report-tabs">
+            <button class="report-tab active" data-tab="monthly-report">Relatório Mensal</button>
+            <button class="report-tab" data-tab="annual-summary">Relatório Anual</button>
+          </div>
+
+          <!-- 5.1 Subtela: Relatório Mensal (Gráficos e Resumos Importantes) -->
+          <div id="report-tab-monthly-report" class="report-tab-content">
+            <!-- Resumo do Mês em Pequeno -->
+            <div class="planning-summary-grid" style="margin-bottom: 24px;">
+              <div class="plan-summary-card">
+                <span class="plan-card-title">Total Receitas</span>
+                <h3 id="rep-income-val" class="value-positive">R$ 0,00</h3>
+              </div>
+              <div class="plan-summary-card">
+                <span class="plan-card-title">Total Despesas</span>
+                <h3 id="rep-expense-val" class="value-negative">R$ 0,00</h3>
+              </div>
+              <div class="plan-summary-card">
+                <span class="plan-card-title">Balanço do Mês</span>
+                <h3 id="rep-balance-val">R$ 0,00</h3>
+              </div>
+              <div class="plan-summary-card">
+                <span class="plan-card-title">Despesas no Cartão</span>
+                <h3 id="rep-card-val" class="value-orange">R$ 0,00</h3>
+              </div>
+            </div>
+
+            <div class="dash-content-grid">
+              <!-- Painel Esquerdo: Gráfico de Rosca -->
+              <div class="dash-panel">
+                <div class="panel-header">
+                  <h3>Gráfico de Categoria</h3>
+                  <select id="report-monthly-type" class="form-select-sm" style="padding: 4px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-family: var(--font-family);">
+                    <option value="expense" selected>Despesas por categorias</option>
+                    <option value="income">Receitas por categorias</option>
+                  </select>
+                </div>
+                <div class="chart-container" style="height: 280px;">
+                  <canvas id="chartReportsMonthly"></canvas>
+                  <div id="rep-chart-no-data" class="chart-empty" style="display:none;">
+                    <i data-lucide="alert-circle"></i>
+                    <p>Nenhum lançamento neste período</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Painel Direito: Tabela de Categorias -->
+              <div class="dash-panel">
+                <div class="panel-header">
+                  <h3>Detalhamento por Categorias</h3>
+                </div>
+                <div class="config-category-list" id="report-category-list-container" style="max-height: 280px;">
+                  <!-- Renderizado dinamicamente -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5.2 Subtela: Resumo do Ano -->
+          <div id="report-tab-annual-summary" class="report-tab-content" style="display:none;">
+            <div class="transactions-list-card">
+              <table class="report-table">
+                <thead>
+                  <tr>
+                    <th>Mês</th>
+                    <th>Receitas Efetivadas</th>
+                    <th>Receitas Previstas</th>
+                    <th>Despesas Efetivadas</th>
+                    <th>Despesas Previstas</th>
+                    <th>Balanço Efetivado</th>
+                    <th>Balanço Previsto</th>
+                  </tr>
+                </thead>
+                <tbody id="report-annual-table-body">
+                  <!-- Renderizado dinamicamente via API -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. TELA CONFIGURAÇÕES -->
+        <section id="screen-config" class="app-screen" style="display:none;">
+          <div class="screen-header">
+            <div>
+              <h2>Configurações</h2>
+              <p class="screen-subtitle">Gerenciamento de categorias e preferências do sistema</p>
+            </div>
+          </div>
+
+          <div class="config-layout-grid">
+            <!-- Configuração de Nuvem Google Drive -->
+            <div class="dash-panel google-drive-panel" style="grid-column: 1 / -1; margin-bottom: 24px;">
+              <div class="panel-header">
+                <h3>Sincronização Nuvem Google Drive (Celular / Autônomo)</h3>
+                <span class="panel-badge" id="drive-badge-mode" style="background-color: var(--border-color); color: var(--text-muted);">Modo Local</span>
+              </div>
+              
+              <div class="config-drive-body">
+                <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">
+                  Configure a sincronização direta com sua conta do Google Drive para poder visualizar e atualizar o seu controle financeiro diretamente pelo seu smartphone, sem depender do seu computador estar ligado.
+                </p>
+                
+                <div class="form-group" style="margin-bottom: 16px;">
+                  <label for="drive-client-id" style="font-weight: 600;">Google OAuth Client ID</label>
+                  <div style="display: flex; gap: 12px; margin-top: 6px;">
+                    <input type="text" id="drive-client-id" placeholder="Insira o seu Client ID do Google Cloud Console..." style="flex-grow: 1;">
+                    <button class="btn btn-secondary" id="btn-save-client-id" style="white-space: nowrap;">Salvar Chave</button>
+                  </div>
+                </div>
+
+                <div class="drive-actions-row" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 16px; background-color: #fafbfe; border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 20px;">
+                  <div class="drive-status-info">
+                    <div style="font-size: 14px; font-weight: 600;">Status da Conexão: <span id="drive-status-auth" class="value-negative">Desconectado</span></div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;" id="drive-status-file-info">Banco de Dados: Não carregado</div>
+                  </div>
+                  <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-secondary" id="btn-drive-mode-toggle" disabled>Ativar Modo Google Drive</button>
+                    <button class="btn btn-primary" id="btn-drive-connect" disabled><i data-lucide="log-in"></i> Conectar Google</button>
+                    <button class="btn btn-secondary" id="btn-drive-disconnect" style="display:none; color: var(--danger-text); background-color: var(--danger-light); border-color: var(--danger-light);"><i data-lucide="log-out"></i> Desconectar</button>
+                  </div>
+                </div>
+
+                <!-- Tutorial Passo a Passo Accordion -->
+                <details class="drive-tutorial-details" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px; background-color: #ffffff;">
+                  <summary style="font-size: 13px; font-weight: 600; cursor: pointer; color: var(--primary); user-select: none;">
+                    Como obter seu Client ID da Google? (Passo a passo rápido e gratuito)
+                  </summary>
+                  <div style="font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+                    <p>1. Acesse o <strong><a href="https://console.cloud.google.com/" target="_blank" style="color: var(--primary);">Google Cloud Console</a></strong> com sua conta Google.</p>
+                    <p>2. Crie um novo projeto (ex: <i>FIN - Controle Pessoal</i>).</p>
+                    <p>3. No menu lateral, acesse <strong>APIs e Serviços</strong> &gt; <strong>Tela de permissão OAuth</strong>. Escolha o tipo <strong>Externo</strong>, dê um nome ao app e preencha seu e-mail.</p>
+                    <p>4. Em <strong>Escopos</strong>, clique em Adicionar e procure por <code>../auth/drive</code> (Google Drive API) e adicione-o.</p>
+                    <p>5. Em <strong>Usuários de teste</strong>, adicione o seu e-mail do Google (obrigatório para que você consiga logar).</p>
+                    <p>6. Vá em <strong>Credenciais</strong> &gt; <strong>Criar Credenciais</strong> &gt; <strong>ID do cliente OAuth</strong>. Escolha <strong>Aplicativo da Web</strong>.</p>
+                    <p>7. No campo <strong>Origens JavaScript autorizadas</strong>, adicione as URLs de onde você abrirá o app (ex: <code>http://localhost:3000</code> para usar no PC, ou o domínio público HTTPS se você hospedar o PWA na web).</p>
+                    <p>8. Clique em Criar, copie o <strong>Client ID</strong> gerado e cole no campo acima!</p>
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <!-- Gerenciamento de Categorias -->
+            <div class="dash-panel">
+              <div class="panel-header">
+                <h3>Cadastrar Nova Categoria</h3>
+              </div>
+              <form id="form-add-category" class="config-form">
+                <div class="form-group">
+                  <label for="cat-name">Nome da Categoria</label>
+                  <input type="text" id="cat-name" required placeholder="Ex: Academia, Petshop...">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="cat-type">Tipo</label>
+                    <select id="cat-type" required>
+                      <option value="expense">Despesa</option>
+                      <option value="income">Provento (Receita)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="cat-parent">Grupo Principal (Opcional)</label>
+                    <select id="cat-parent">
+                      <option value="">Nenhum (Será grupo principal)</option>
+                      <option value="Casa">Casa</option>
+                      <option value="Entretenimento">Entretenimento</option>
+                      <option value="Comidas">Comidas</option>
+                      <option value="Presentes">Presentes</option>
+                      <option value="Danilo">Danilo</option>
+                      <option value="Investimento">Investimento</option>
+                      <option value="Médico">Médico</option>
+                      <option value="Pessoal">Pessoal</option>
+                      <option value="Transporte">Transporte</option>
+                      <option value="Proventos">Proventos</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="cat-desc">Descrição / Comentários</label>
+                  <textarea id="cat-desc" rows="2" placeholder="Opcional..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Salvar Categoria</button>
+              </form>
+            </div>
+
+            <!-- Listagem de Categorias Existentes -->
+            <div class="dash-panel">
+              <div class="panel-header">
+                <h3>Categorias Cadastradas</h3>
+              </div>
+              <div class="config-category-list" id="config-categories-container">
+                <!-- Renderizado dinamicamente -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ================= MODAIS ================= -->
+
+  <!-- A. MODAL LANÇAMENTO (NOVA TRANSAÇÃO) -->
+  <div class="modal-overlay" id="modal-transaction">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-trans-title">Nova Transação</h3>
+        <button class="modal-close" id="btn-close-trans-modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="form-transaction">
+        <!-- Campo valor gigante no topo -->
+        <div class="modal-value-input-wrapper">
+          <span>R$</span>
+          <input type="number" id="trans-amount" step="0.01" min="0.01" required placeholder="0,00">
+        </div>
+
+        <div class="modal-body">
+          <!-- Tipo oculto ou chaveado e ID para edição -->
+          <input type="hidden" id="trans-type" value="expense">
+          <input type="hidden" id="trans-id" value="">
+          <input type="hidden" id="trans-recurrence-id" value="">
+          <input type="hidden" id="trans-recurrence-month" value="">
+
+          <div class="form-group">
+            <label for="trans-desc">Descrição</label>
+            <input type="text" id="trans-desc" placeholder="Ex: Supermercado, Salário...">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="trans-date">Data</label>
+              <input type="date" id="trans-date" required>
+            </div>
+            <div class="form-group">
+              <label for="trans-category-main">Categoria</label>
+              <select id="trans-category-main" required>
+                <!-- Preenchido via JS -->
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row" id="group-category-sub" style="display:none;">
+            <div class="form-group" style="width:100%;">
+              <label for="trans-category-sub">Subcategoria (Opcional)</label>
+              <select id="trans-category-sub">
+                <!-- Preenchido via JS -->
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="trans-payment-method">Forma de Pagamento</label>
+              <select id="trans-payment-method" required>
+                <option value="money">Dinheiro / Débito</option>
+                <option value="credit_card">Cartão de Crédito</option>
+              </select>
+            </div>
+            <div class="form-group" id="group-credit-card" style="display:none;">
+              <label for="trans-credit-card">Qual Cartão?</label>
+              <select id="trans-credit-card">
+                <!-- Preenchido via JS -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Campos especiais: Recorrência (disponível para proventos e despesas) -->
+          <div id="recurrence-special-fields">
+            <div class="form-checkbox-row">
+              <label class="checkbox-label">
+                <input type="checkbox" id="trans-is-recurring">
+                <span>Lançamento Recorrente (Mensal)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Campos especiais: Parcelamento (exclusivo para despesas) -->
+          <div id="split-special-fields">
+            <div class="form-checkbox-row">
+              <label class="checkbox-label">
+                <input type="checkbox" id="trans-is-split">
+                <span>Dividir Despesa (Parcelar)</span>
+              </label>
+            </div>
+
+            <div class="form-group" id="group-installments" style="display:none;">
+              <label for="trans-installments">Número de Parcelas</label>
+              <input type="number" id="trans-installments" min="2" max="72" value="2">
+            </div>
+          </div>
+
+          <!-- Seção de opções para edição de recorrência -->
+          <div id="group-recurrence-edit-scope" style="display:none; margin-bottom: 16px; padding: 12px; background-color: var(--primary-light); border-radius: var(--radius-sm); border: 1px dashed var(--primary); margin-top: 8px;">
+            <label style="font-weight: 600; font-size: 13px; color: var(--primary); display: block; margin-bottom: 8px;">Este lançamento faz parte de uma recorrência:</label>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <label class="radio-label" style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+                <input type="radio" name="trans-recurrence-scope" id="scope-single" value="single" checked>
+                <span>Alterar apenas este mês</span>
+              </label>
+              <label class="radio-label" style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+                <input type="radio" name="trans-recurrence-scope" id="scope-all" value="all">
+                <span>Alterar este mês e todos os futuros (Recorrência)</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="trans-status">Status</label>
+            <select id="trans-status" required>
+              <option value="realized">Efetivado (Pago/Recebido)</option>
+              <option value="pending">Pendente (Previsto)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-trans-modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Lançamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- B. MODAL NOVO CARTÃO -->
+  <div class="modal-overlay" id="modal-card">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Novo Cartão de Crédito</h3>
+        <button class="modal-close" id="btn-close-card-modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="form-card">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="card-name">Nome do Cartão / Banco</label>
+            <input type="text" id="card-name" required placeholder="Ex: Itaú Personalité, Nubank...">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="card-closing">Dia de Fechamento</label>
+              <input type="number" id="card-closing" min="1" max="31" required placeholder="Ex: 25">
+            </div>
+            <div class="form-group">
+              <label for="card-due">Dia de Vencimento</label>
+              <input type="number" id="card-due" min="1" max="31" required placeholder="Ex: 10">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="card-limit">Limite de Crédito</label>
+            <input type="number" id="card-limit" step="0.01" min="0" required placeholder="0,00">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-card-modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Cartão</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- C. MODAL DEFINIR ORÇAMENTO (PLANEJAMENTO) -->
+  <div class="modal-overlay" id="modal-budget">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Definir Orçamento de Categoria</h3>
+        <button class="modal-close" id="btn-close-budget-modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="form-budget">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="budget-category">Categoria</label>
+            <select id="budget-category" required>
+              <!-- Preenchido via JS (apenas categorias de despesa) -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="budget-amount">Meta de Limite de Gastos</label>
+            <input type="number" id="budget-amount" step="0.01" min="0.01" required placeholder="0,00">
+          </div>
+          <div class="form-checkbox-row">
+            <label class="checkbox-label">
+              <input type="checkbox" id="budget-is-recurring">
+              <span>Orçamento Recorrente (Mensal)</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-budget-modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Definir Limite</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- D. MODAL EDITAR CARTÃO -->
+  <div class="modal-overlay" id="modal-edit-card">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Editar Cartão de Crédito</h3>
+        <button class="modal-close" id="btn-close-edit-card-modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="form-edit-card">
+        <input type="hidden" id="edit-card-id">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="edit-card-name">Nome do Cartão / Banco</label>
+            <input type="text" id="edit-card-name" required placeholder="Ex: Itaú, Nubank...">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-card-closing">Dia de Fechamento</label>
+              <input type="number" id="edit-card-closing" min="1" max="31" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-card-due">Dia de Vencimento</label>
+              <input type="number" id="edit-card-due" min="1" max="31" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit-card-limit">Limite de Crédito</label>
+            <input type="number" id="edit-card-limit" step="0.01" min="0" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-edit-card-modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- E. MODAL DETALHES DE PARCELAMENTO -->
+  <div class="modal-overlay" id="modal-installment-details">
+    <div class="modal-card" style="width: 500px;">
+      <div class="modal-header">
+        <h3>Detalhamento do Parcelamento</h3>
+        <button class="modal-close" id="btn-close-inst-modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <!-- Resumo de valores em grid de 3 colunas -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; text-align: center;">
+            <div style="background-color: var(--bg-app); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              <span style="font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase;">Valor Total</span>
+              <h4 id="inst-detail-total" style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-top: 4px;">R$ 0,00</h4>
+            </div>
+            <div style="background-color: var(--success-light); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--success-light);">
+              <span style="font-size: 11px; color: var(--success-text); font-weight: 500; text-transform: uppercase;">Já Pago</span>
+              <h4 id="inst-detail-paid" style="font-size: 16px; font-weight: 700; color: var(--success-text); margin-top: 4px;">R$ 0,00</h4>
+            </div>
+            <div style="background-color: var(--orange-light); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--orange-light);">
+              <span style="font-size: 11px; color: var(--orange); font-weight: 500; text-transform: uppercase;">A Pagar</span>
+              <h4 id="inst-detail-remaining" style="font-size: 16px; font-weight: 700; color: var(--orange); margin-top: 4px;">R$ 0,00</h4>
+            </div>
+          </div>
+          
+          <!-- Progresso visual -->
+          <div class="progress-bar-container">
+            <span class="progress-label" style="font-size: 12px;" id="inst-progress-label">Progresso da quitação: 0%</span>
+            <div class="progress-bar-bg" style="height: 6px;">
+              <div class="progress-bar-fill" id="inst-progress-bar" style="width: 0%; background-color: var(--success);"></div>
+            </div>
+          </div>
+
+          <!-- Tabela/Lista de Parcelas -->
+          <div style="max-height: 240px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+            <table class="transactions-table" style="width: 100%; font-size: 13px;">
+              <thead>
+                <tr>
+                  <th style="padding: 8px 12px; font-size: 11px;">Parc.</th>
+                  <th style="padding: 8px 12px; font-size: 11px;">Data</th>
+                  <th style="padding: 8px 12px; font-size: 11px;">Fatura</th>
+                  <th style="padding: 8px 12px; font-size: 11px;">Valor</th>
+                  <th style="padding: 8px 12px; font-size: 11px;">Status</th>
+                </tr>
+              </thead>
+              <tbody id="inst-detail-table-body">
+                <!-- Renderizado via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="btn-close-inst-modal-ok">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- BARRA DE NAVEGAÇÃO INFERIOR (MOBILE) -->
+  <nav class="bottom-nav">
+    <a href="#dashboard" class="bottom-nav-item active" data-target="dashboard">
+      <i data-lucide="layout-dashboard"></i>
+      <span>Dashboard</span>
+    </a>
+    <a href="#transactions" class="bottom-nav-item" data-target="transactions">
+      <i data-lucide="arrow-left-right"></i>
+      <span>Transações</span>
+    </a>
+    <a href="#cards" class="bottom-nav-item" data-target="cards">
+      <i data-lucide="credit-card"></i>
+      <span>Cartões</span>
+    </a>
+    <a href="#planning" class="bottom-nav-item" data-target="planning">
+      <i data-lucide="compass"></i>
+      <span>Meta</span>
+    </a>
+    <a href="#reports" class="bottom-nav-item" data-target="reports">
+      <i data-lucide="pie-chart"></i>
+      <span>Relatórios</span>
+    </a>
+    <a href="#config" class="bottom-nav-item" data-target="config">
+      <i data-lucide="settings"></i>
+      <span>Ajustes</span>
+    </a>
+  </nav>
+
+  <!-- CDNs e Bancos Locais -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="drive.js"></script>
+  <script src="api.js"></script>
+
+  <!-- App Logic script -->
+  <script src="app.js"></script>
+</body>
+</html>
