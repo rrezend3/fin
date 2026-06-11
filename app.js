@@ -777,15 +777,14 @@ async function deleteRecurrence(recurrenceId, date) {
   }
 
   try {
-    const res = await fetch(url, { method: 'DELETE' });
-    const result = await res.json();
-    if (res.ok) {
+    const result = await API.deleteRecurrence(recurrenceId, stopOnly ? month : null);
+    if (result && !result.error) {
       loadCurrentScreenData();
       if (STATE.activeScreen !== 'dashboard') {
         loadDashboardData(getYearMonthString());
       }
     } else {
-      alert("Erro ao excluir recorrência: " + result.error);
+      alert("Erro ao excluir recorrência: " + (result ? result.error : 'Erro desconhecido'));
     }
   } catch (err) {
     console.error("Erro na exclusão da recorrência:", err);
@@ -828,8 +827,7 @@ async function renderCardsScreen(totalBills) {
 
   // Buscar detalhes de transações para calcular faturas individuais no mês selecionado
   const month = getYearMonthString();
-  const resTrans = await fetch(`/api/transactions?month=${month}`);
-  const transactions = await resTrans.json();
+  const transactions = await API.getTransactions(month);
 
   STATE.creditCards.forEach(card => {
     // Calcular total gasto neste cartão específico com fatura em 'month'
@@ -882,13 +880,10 @@ async function renderCardsScreen(totalBills) {
 // 4. LÓGICA DA TELA PLANEJAMENTO (ORÇAMENTOS)
 async function loadPlanningData(month) {
   try {
-    const [resBudget, resDash] = await Promise.all([
-      fetch(`/api/budgets?month=${month}`),
-      fetch(`/api/dashboard?month=${month}`)
+    const [budgets, dashData] = await Promise.all([
+      API.getBudgets(month),
+      API.getDashboard(month)
     ]);
-    
-    const budgets = await resBudget.json();
-    const dashData = await resDash.json();
 
     STATE.budgets = budgets;
     
@@ -970,8 +965,7 @@ async function loadAnnualReport() {
     document.getElementById('report-year-selector-container').style.display = 'block';
     
     const year = document.getElementById('report-year-select').value;
-    const res = await fetch(`/api/reports/annual?year=${year}`);
-    const data = await res.json();
+    const data = await API.getAnnualReport(year);
     
     const tbody = document.getElementById('report-annual-table-body');
     tbody.innerHTML = '';
@@ -1384,19 +1378,13 @@ async function handleTransactionSubmit(e) {
     };
 
     try {
-      const res = await fetch('/api/recurrences', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(recPayload)
-      });
-      
-      const result = await res.json();
-      if (res.ok) {
+      const result = await API.updateRecurrence(recPayload);
+      if (result && !result.error) {
         closeModal('modal-transaction');
         loadCurrentScreenData();
         loadDashboardData(getYearMonthString());
       } else {
-        alert('Erro ao salvar recorrência: ' + result.error);
+        alert('Erro ao salvar recorrência: ' + (result ? result.error : 'Erro desconhecido'));
       }
     } catch (err) {
       console.error('Erro na submissão de recorrência:', err);
@@ -1405,21 +1393,15 @@ async function handleTransactionSubmit(e) {
   }
 
   try {
-    const res = await fetch('/api/transactions', {
-      method: id ? 'PUT' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    
-    const result = await res.json();
-    if (res.ok) {
+    const result = id ? await API.updateTransaction(payload) : await API.addTransaction(payload);
+    if (result && !result.error) {
       closeModal('modal-transaction');
       
       // Recarregar dados
       loadCurrentScreenData();
       loadDashboardData(getYearMonthString());
     } else {
-      alert('Erro ao salvar transação: ' + result.error);
+      alert('Erro ao salvar transação: ' + (result ? result.error : 'Erro desconhecido'));
     }
   } catch (err) {
     console.error('Erro na submissão de transação:', err);
@@ -1463,18 +1445,12 @@ async function handleBudgetSubmit(e) {
   const payload = { category_id, month, amount, is_recurring };
 
   try {
-    const res = await fetch('/api/budgets', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    
-    if (res.ok) {
+    const result = await API.saveBudget(payload);
+    if (result && !result.error) {
       closeModal('modal-budget');
       loadPlanningData(month); // Recarregar dados
     } else {
-      const err = await res.json();
-      alert('Erro ao definir orçamento: ' + err.error);
+      alert('Erro ao definir orçamento: ' + (result ? result.error : 'Erro desconhecido'));
     }
   } catch (err) {
     console.error('Erro na submissão do planejamento:', err);
