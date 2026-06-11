@@ -2146,11 +2146,17 @@ function setupGoogleDriveUI() {
       statusAuth.textContent = 'Conectado';
     });
     
-    if (API.drive.fileId) {
-      fileInfo.textContent = 'Banco de Dados: finance.db (ID: ' + API.drive.fileId + ')';
-    } else {
-      fileInfo.textContent = 'Banco de Dados: Não localizado no Drive';
-    }
+    fileInfo.textContent = 'Buscando banco de dados no Drive...';
+    API.drive.findDatabaseFile().then(file => {
+      if (file) {
+        fileInfo.textContent = 'Banco de Dados: finance.db (ID: ' + file.id + ')';
+      } else {
+        fileInfo.textContent = 'Banco de Dados: Não localizado no Drive';
+      }
+    }).catch(err => {
+      fileInfo.textContent = 'Banco de Dados: Erro ao buscar no Drive';
+      console.error(err);
+    });
   } else {
     statusAuth.textContent = 'Desconectado';
     statusAuth.className = 'value-negative';
